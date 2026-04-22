@@ -20,7 +20,7 @@
       background: #1e293b;
       padding: 30px;
       border-radius: 20px;
-      width: 500px;
+      width: 520px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.6);
       box-sizing: border-box;
     }
@@ -54,6 +54,25 @@
     }
 
     button:hover { background: #16a34a; }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 6px 10px;
+      background: #334155;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .tab.active {
+      background: #22c55e;
+    }
 
     .expense {
       display: flex;
@@ -107,6 +126,9 @@
     <input type="number" id="budget" placeholder="Set your total budget" oninput="saveData(); render();">
   </div>
 
+  <!-- CATEGORY TABS -->
+  <div class="tabs" id="tabs"></div>
+
   <input type="text" id="name" placeholder="Expense Name">
   <input type="number" id="amount" placeholder="Price">
   <button onclick="addExpense()">Add Expense</button>
@@ -120,18 +142,22 @@
 <script>
   let expenses = [];
   let currentMode = "simple";
+  let categories = ["All", "Skincare", "Toys"];
+  let currentCategory = "All";
 
   function saveData() {
     const budget = document.getElementById('budget').value;
     localStorage.setItem('expenses', JSON.stringify(expenses));
     localStorage.setItem('budget', budget);
     localStorage.setItem('mode', currentMode);
+    localStorage.setItem('category', currentCategory);
   }
 
   function loadData() {
     const savedExpenses = localStorage.getItem('expenses');
     const savedBudget = localStorage.getItem('budget');
     const savedMode = localStorage.getItem('mode');
+    const savedCategory = localStorage.getItem('category');
 
     if (savedExpenses) expenses = JSON.parse(savedExpenses);
     if (savedBudget) document.getElementById('budget').value = savedBudget;
@@ -139,8 +165,28 @@
       currentMode = savedMode;
       document.getElementById('mode').value = savedMode;
     }
+    if (savedCategory) currentCategory = savedCategory;
 
+    renderTabs();
     switchMode();
+  }
+
+  function renderTabs() {
+    const tabs = document.getElementById('tabs');
+    tabs.innerHTML = '';
+
+    categories.forEach(cat => {
+      const btn = document.createElement('div');
+      btn.className = 'tab' + (cat === currentCategory ? ' active' : '');
+      btn.innerText = cat;
+      btn.onclick = () => {
+        currentCategory = cat;
+        saveData();
+        render();
+        renderTabs();
+      };
+      tabs.appendChild(btn);
+    });
   }
 
   function switchMode() {
@@ -167,7 +213,7 @@
 
     if (!name || isNaN(amount)) return;
 
-    expenses.push({ name, amount });
+    expenses.push({ name, amount, category: currentCategory });
 
     document.getElementById('name').value = '';
     document.getElementById('amount').value = '';
@@ -188,7 +234,11 @@
 
     let total = 0;
 
-    expenses.forEach((exp, index) => {
+    const filtered = currentCategory === "All"
+      ? expenses
+      : expenses.filter(e => e.category === currentCategory);
+
+    filtered.forEach((exp, index) => {
       total = Math.round((total + Number(exp.amount)) * 100) / 100;
 
       const div = document.createElement('div');
@@ -196,7 +246,7 @@
 
       div.innerHTML = `
         <span>${exp.name}: $${Number(exp.amount).toFixed(2)}</span>
-        <span class="delete" onclick="deleteExpense(${index})">ⓧ</span>
+        <span class="delete" onclick="deleteExpense(${expenses.indexOf(exp)})">ⓧ</span>
       `;
 
       list.appendChild(div);
