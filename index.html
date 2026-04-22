@@ -189,7 +189,7 @@
     let total = 0;
 
     expenses.forEach((exp, index) => {
-      total += Number(exp.amount);
+      total = Math.round((total + Number(exp.amount)) * 100) / 100;
 
       const div = document.createElement('div');
       div.className = 'expense';
@@ -209,7 +209,7 @@
       const remainingEl = document.getElementById('remaining');
 
       if (!isNaN(budget)) {
-        const remaining = budget - total;
+        const remaining = Math.round((budget - total) * 100) / 100;
         remainingEl.innerText = 'Remaining: $' + remaining.toFixed(2);
         remainingEl.style.color = remaining < 0 ? 'red' : 'lightgreen';
       } else {
