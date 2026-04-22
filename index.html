@@ -189,20 +189,20 @@
     let total = 0;
 
     expenses.forEach((exp, index) => {
-      total += exp.amount;
+      total += Number(exp.amount);
 
       const div = document.createElement('div');
       div.className = 'expense';
 
       div.innerHTML = `
-        <span>${exp.name}: $${exp.amount}</span>
+        <span>${exp.name}: $${Number(exp.amount).toFixed(2)}</span>
         <span class="delete" onclick="deleteExpense(${index})">ⓧ</span>
       `;
 
       list.appendChild(div);
     });
 
-    document.getElementById('total').innerText = 'Total: $' + total;
+    document.getElementById('total').innerText = 'Total: $' + total.toFixed(2);
 
     if (currentMode === "budget") {
       const budget = parseFloat(document.getElementById('budget').value);
@@ -210,7 +210,7 @@
 
       if (!isNaN(budget)) {
         const remaining = budget - total;
-        remainingEl.innerText = 'Remaining: $' + remaining;
+        remainingEl.innerText = 'Remaining: $' + remaining.toFixed(2);
         remainingEl.style.color = remaining < 0 ? 'red' : 'lightgreen';
       } else {
         remainingEl.innerText = 'Remaining: $0';
